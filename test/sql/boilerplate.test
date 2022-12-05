@@ -1,0 +1,8 @@
+# name: test/sql/test_boilerplate.test
+# description: test boiler plate extension
+# group: [boilerplate]
+
+query I
+SELECT * FROM hello("thisisateststring");
+----
+23
