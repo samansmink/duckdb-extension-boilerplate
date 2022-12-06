@@ -21,23 +21,23 @@ jobs:
         with:
           python-version: '3.7'
 
-       # Build extension
-    - name: Build extension
-      shell: bash
-      run: |
-        make release
+         # Build extension
+      - name: Build extension
+        shell: bash
+        run: |
+          make release
 
-    # TODO: when adding S3 uploads, this can do remote tests
-    - name: Test
-      shell: bash
-      run: |
-        ./duckdb/scripts/extension-upload-test.sh local
+      # TODO: when adding S3 uploads, this can do remote tests
+      - name: Test
+        shell: bash
+        run: |
+          ./duckdb/scripts/extension-upload-test.sh local
 
-    - uses: actions/upload-artifact@v2
-      with:
-        name: macos-extensions-universal
-        path: |
-          build/release/extension/*/*.duckdb_extension
+      - uses: actions/upload-artifact@v2
+        with:
+          name: macos-extensions-universal
+          path: |
+            build/release/extension/*/*.duckdb_extension
 
 #    # Deploy binary # todo_replace bogus version when we have confirmed this will not bork production
 #    - name: Deploy
