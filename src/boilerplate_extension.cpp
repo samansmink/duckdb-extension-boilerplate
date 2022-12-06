@@ -13,7 +13,7 @@ inline int32_t hello_fun(string_t what) {
 static void LoadInternal(DatabaseInstance &instance) {
 	Connection con(instance);
     con.BeginTransaction();
-    con.CreateScalarFunction<int32_t, string_t>("hello", {LogicalType(LogicalTypeId::VARCHAR)},
+    con.CreateScalarFunction<int32_t, string_t>("boilerplatify", {LogicalType(LogicalTypeId::VARCHAR)},
                                                 LogicalType(LogicalTypeId::INTEGER), &hello_fun);
     con.Commit();
 }

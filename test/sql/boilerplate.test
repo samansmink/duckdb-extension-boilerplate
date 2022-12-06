@@ -4,13 +4,13 @@
 
 # Before we load the extension, this will fail
 statement error
-SELECT hello('World');
+SELECT boilerplatify('World');
 
 # Require statement will ensure this test is run with this extension loaded
 require boilerplate
 
 # Confirm the extension works
 query I
-SELECT hello('World');
+SELECT boilerplatify('World');
 ----
 10

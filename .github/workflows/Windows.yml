@@ -1,0 +1,44 @@
+name: MacOS
+on: [push, pull_request,repository_dispatch]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref || '' }}-${{ github.base_ref || '' }}-${{ github.ref != 'refs/heads/master' || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  win-extensions-64:
+    name: Windows Extensions (x64)
+    runs-on: windows-latest
+    needs: win-release-64
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: 'true'
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+      - name: Install OpenSSL
+        shell: bash
+        run: |
+          choco install openssl -y --force
+
+      # Build extension
+      - name: Build extension
+        shell: bash
+        run: |
+          make release
+
+      # TODO: when adding S3 uploads, this can do remote tests
+      - name: Test
+        shell: bash
+        run: |
+          ./duckdb/scripts/extension-upload-test.sh local
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: linux-extensions-64-aarch64
+          path: |
+            build/release/extension/*/*.duckdb_extension
