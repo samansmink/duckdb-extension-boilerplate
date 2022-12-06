@@ -8,11 +8,10 @@ jobs:
     name: Linux Extensions (64 Bit)
     runs-on: ubuntu-latest
     container: ubuntu:16.04
-    needs: linux-release-64
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.S3_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_KEY }}
-      AWS_BUCKET: ${{ secrets.S3_BUCKET }}
+      AWS_BUCKET:
       AWS_DEFAULT_REGION: us-east-1
 
     steps:
@@ -29,13 +28,13 @@ jobs:
       run: |
         make release
 
-    # Deploy binary
+    # Deploy binary # todo_replace bogus version when we have confirmed this will not bork production
     - name: Deploy
       if: ${{ inputs.deploy_as != '' }}
       shell: bash
       run: |
         cd  ${{ inputs.build_dir}}
-        ./scripts/extension-upload.sh ${{ inputs.deploy_as }} ${{ inputs.deploy_version }} ${{ inputs.s3_external_bucket }} ${{ inputs.s3_external_bucket }} 0
+        ./scripts/extension-upload.sh bogus_platform bogus_version ${{ secrets.S3_BUCKET }} 0
 
     - name: Test
       shell: bash
