@@ -81,14 +81,7 @@ jobs:
         fetch-depth: 0
         submodules: 'true'
 
-    - name: Test
-      shell: bash
-      run: |
-        ls
-        cd duckdb
-        ls
-
-    - uses: ./.github/actions/ubuntu_16_setup
+    - uses: ./duckdb/.github/actions/ubuntu_16_setup
 
     # Build extension
     - name: Build extension
@@ -146,7 +139,7 @@ jobs:
           fetch-depth: 0
           submodules: 'true'
 
-      - uses: ./.github/actions/ubuntu_16_setup
+      - uses: ./duckdb/.github/actions/ubuntu_16_setup
         with:
           aarch64_cross_compile: 1
 
