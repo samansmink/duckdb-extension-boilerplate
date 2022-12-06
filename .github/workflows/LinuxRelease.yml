@@ -19,30 +19,7 @@ jobs:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-
-    # Todo we now do a lot of this shit twice
-    - name: Install stuff
-      shell: bash
-      run: |
-        apt-get update -y -qq
-        apt-get install -y -qq software-properties-common
-        add-apt-repository ppa:git-core/ppa
-        apt-get update -y -qq
-        apt-get install -y -qq ninja-build make gcc-multilib g++-multilib libssl-dev wget openjdk-8-jdk zip maven unixodbc-dev libc6-dev-i386 lib32readline6-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip build-essential checkinstall libffi-dev curl libz-dev openssh-client
-
-    - name: Install Git 2.18.5
-      shell: bash
-      run: |
-        wget https://github.com/git/git/archive/refs/tags/v2.18.5.tar.gz
-        tar xvf v2.18.5.tar.gz
-        cd git-2.18.5
-        make
-        make prefix=/usr install
-        git --version
-
-    - name: Update DuckDB submodule
-      run: |
-        make pull
+        submodules: 'true'
 
     - uses: ./duckdb/.github/actions/ubuntu_16_setup
 
