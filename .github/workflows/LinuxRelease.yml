@@ -15,7 +15,7 @@ jobs:
       AWS_DEFAULT_REGION: us-east-1
 
     steps:
-    # Todo we now do a lot of this shit twice
+    # Todo we now do a lot of this shit twice, because we cannot get submodule without a recent git
     - name: Install stuff
       shell: bash
       run: |
@@ -45,9 +45,12 @@ jobs:
     # Build extension
     - name: Build extension
       shell: bash
+      env:
+        GEN: ninja
       run: |
         make release
 
+      # TODO: when adding S3 uploads, this can do remote tests
     - name: Test
       shell: bash
       run: |
@@ -69,60 +72,16 @@ jobs:
     name: Linux Extensions (64 Bit, GCC4)
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux2014_x86_64
+    env:
+      GEN: ninja
 
     steps:
-    - name: Install dependencies
-      shell: bash
-      run: |
-        yum install -y gcc gcc-c++ cmake make
-        yum install -y epel-release
-        yum install -y make gcc perl-core pcre-devel wget zlib-devel python3
-        yum install -y https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
-        yum install -y git
-        yum install -y curl-devel expat-devel gettext-devel zlib-devel perl-ExtUtils-MakeMaker
-
-    - name: Install AWS CLI
-      shell: bash
-      run: |
-        python3 -m pip install awscli
-        aws --version
-
-      # the weird openssl findreplace fix with version numbers is from: https://github.com/h2o/h2o/issues/213
-    - name: Download OpenSSL 1.1.1s
-      shell: bash
-      run: |
-        wget https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1s.tar.gz
-        tar -xzvf OpenSSL_1_1_1s.tar.gz
-        mv openssl-OpenSSL_1_1_1s openssl-1.1.1s
-        cd openssl-1.1.1s
-        find ./ -type f -exec sed -i -e 's/\#\ define\ OPENSSL\_VERSION\_NUMBER/\#define\ OPENSSL\_VERSION\_NUMBER/g' {} \;
-
-    - name: Configure OpenSSL
-      shell: bash
-      run: |
-        cd openssl-1.1.1s
-        ./config --prefix=/usr --openssldir=/etc/ssl --libdir=lib no-shared zlib-dynamic
-
-    - name: Build OpenSSL
-      shell: bash
-      run: |
-        cd openssl-1.1.1s
-        make
-        make install
-
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
         submodules: 'true'
 
-    - name: Version Check
-      shell: bash
-      run: |
-        cmake --version
-        ldd --version ldd
-        ls -al
-        pwd
-        echo "$USER"
+    - uses: ./.github/actions/ubuntu_16_setup
 
     # Build extension
     - name: Build extension
@@ -130,6 +89,7 @@ jobs:
       run: |
         make release
 
+      # TODO: when adding S3 uploads, this can do remote tests
     - name: Test
       shell: bash
       run: |
@@ -146,3 +106,38 @@ jobs:
 #      shell: bash
 #      run: |
 #        ./duckdb/scripts/extension-upload.sh bogus_platform bogus_version ${{ secrets.S3_BUCKET }} 0
+
+ linux-extensions-64-aarch64:
+   name: Linux Extensions (AARCH64)
+   runs-on: ubuntu-latest
+   container: ubuntu:18.04 # cross compiler not available in 16
+   env:
+     GEN: ninja
+
+   steps:
+     - uses: actions/checkout@v3
+       with:
+         fetch-depth: 0
+         submodules: 'true'
+
+     - uses: ./.github/actions/ubuntu_16_setup
+       with:
+         aarch64_cross_compile: 1
+
+    # Build extension
+    - name: Build extension
+      shell: bash
+      run: |
+        make release
+
+    # TODO: when adding S3 uploads, this can do remote tests
+    - name: Test
+      shell: bash
+      run: |
+        ./duckdb/scripts/extension-upload-test.sh local
+
+     - uses: actions/upload-artifact@v2
+       with:
+         name: linux-extensions-64-aarch64
+         path: |
+           build/release/extension/*/*.duckdb_extension

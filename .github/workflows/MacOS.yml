@@ -1,0 +1,48 @@
+name: MacOS
+on: [push, pull_request,repository_dispatch]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref || '' }}-${{ github.base_ref || '' }}-${{ github.ref != 'refs/heads/master' || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  macos-extensions:
+    name: OSX Extensions Release
+    runs-on: macos-latest
+    env:
+      OSX_BUILD_UNIVERSAL: 1
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: 'true'
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+       # Build extension
+    - name: Build extension
+      shell: bash
+      run: |
+        make release
+
+    # TODO: when adding S3 uploads, this can do remote tests
+    - name: Test
+      shell: bash
+      run: |
+        ./duckdb/scripts/extension-upload-test.sh local
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: macos-extensions-universal
+        path: |
+          build/release/extension/*/*.duckdb_extension
+
+#    # Deploy binary # todo_replace bogus version when we have confirmed this will not bork production
+#    - name: Deploy
+#      shell: bash
+#      run: |
+#        ./duckdb/scripts/extension-upload.sh bogus_platform_amd64 bogus_version ${{ secrets.S3_BUCKET }} 0
+#        ./duckdb/scripts/extension-upload.sh bogus_platform_arm64 bogus_version ${{ secrets.S3_BUCKET }} 0
