@@ -6,7 +6,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
- macos-extensions:
+  macos-extensions:
     name: OSX Extensions Release
     runs-on: macos-latest
     env:
