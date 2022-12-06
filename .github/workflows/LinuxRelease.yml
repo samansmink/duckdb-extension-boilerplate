@@ -6,7 +6,7 @@ concurrency:
 
 jobs:
   linux-extensions-64:
-    name: Linux Extensions (64 Bit)
+    name: Linux Extensions (x64)
     runs-on: ubuntu-latest
     container: ubuntu:16.04
     env:
@@ -69,7 +69,7 @@ jobs:
 #        ./scripts/extension-upload.sh bogus_platform bogus_version ${{ secrets.S3_BUCKET }} 0
 
   manylinux-extensions:
-    name: Linux Extensions (64 Bit, GCC4)
+    name: Linux Extensions (x64, GCC4)
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux2014_x86_64
     env:
@@ -81,6 +81,7 @@ jobs:
         fetch-depth: 0
         submodules: 'true'
 
+    # TODO: move CENTOS7 setup to action, use ninja in main duckdb
     - name: Install dependencies
       shell: bash
       run: |
@@ -123,7 +124,7 @@ jobs:
 #        ./duckdb/scripts/extension-upload.sh bogus_platform bogus_version ${{ secrets.S3_BUCKET }} 0
 
   linux-extensions-64-aarch64:
-    name: Linux Extensions (AARCH64)
+    name: Linux Extensions (aarch64)
     runs-on: ubuntu-latest
     container: ubuntu:18.04 # cross compiler not available in 16
     env:

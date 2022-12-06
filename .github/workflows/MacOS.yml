@@ -6,16 +6,20 @@ concurrency:
 
 jobs:
   macos-extensions:
-    name: OSX Extensions Release
+    name: OSX Extensions (Universal)
     runs-on: macos-latest
     env:
       OSX_BUILD_UNIVERSAL: 1
+      GEN: ninja
 
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           submodules: 'true'
+
+      - name: Install Ninja
+          run: brew install ninja
 
       - uses: actions/setup-python@v2
         with:
