@@ -1,0 +1,65 @@
+name: LinuxRelease
+on: [push, pull_request,repository_dispatch]
+
+jobs:
+
+ # Use duckdb's CI to deploy binaries to a custom
+ linux-extensions-64:
+    name: Linux Extensions (64 Bit)
+    runs-on: ubuntu-latest
+    container: ubuntu:16.04
+    needs: linux-release-64
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.S3_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_KEY }}
+      AWS_BUCKET: ${{ secrets.S3_BUCKET }}
+      AWS_DEFAULT_REGION: us-east-1
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - uses: ./duckdb/.github/actions/ubuntu_16_setup
+
+    # Build extension
+    - name: Deploy
+      if: ${{ inputs.deploy_as != '' }}
+      shell: bash
+      run: |
+        make release
+
+    # Deploy binary
+    - name: Deploy
+      if: ${{ inputs.deploy_as != '' }}
+      shell: bash
+      run: |
+        cd  ${{ inputs.build_dir}}
+        ./scripts/extension-upload.sh ${{ inputs.deploy_as }} ${{ inputs.deploy_version }} ${{ inputs.s3_external_bucket }} ${{ inputs.s3_external_bucket }} 0
+
+    - name: Test
+      shell: bash
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.s3_id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.s3_key }}
+        AWS_DEFAULT_REGION: us-east-1
+      run: |
+        cd  ${{ inputs.build_dir}}
+        if [[ "$GITHUB_REF" =~ ^(refs/heads/master|refs/tags/v.+)$ && "$GITHUB_REPOSITORY" = "duckdb/duckdb" ]] ; then
+          ./scripts/extension-upload-test.sh
+        else
+          ./scripts/extension-upload-test.sh local
+        fi
+
+    - uses: ./.github/actions/build_extensions
+      with:
+        post_install: rm build/release/src/libduckdb*
+        deploy_as: linux_amd64
+
+
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: linux-extensions-64
+        path: |
+          build/release/extension/*/*.duckdb_extension

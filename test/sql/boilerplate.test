@@ -1,8 +1,16 @@
-# name: test/sql/test_boilerplate.test
+# name: test/sql/boilerplate.test
 # description: test boiler plate extension
 # group: [boilerplate]
 
+# Before we load the extension, this will fail
+statement error
+SELECT hello('World');
+
+# Require statement will ensure this test is run with this extension loaded
+require boilerplate
+
+# Confirm the extension works
 query I
-SELECT * FROM hello("thisisateststring");
+SELECT hello('World');
 ----
-23
+10

@@ -23,22 +23,24 @@ ifeq (${BUILD_R}, 1)
 endif
 
 pull:
-	git submodule init
-	git submodule update --recursive --remote
+#	git submodule init
+#	git submodule update --recursive --remote
 
 clean:
 	rm -rf build
 
+# Bundled builds will produce binaries with the extension already linked into them
 debug_bundled: pull
-	mkdir -pcd  build/debug && \
+	mkdir -p  build/debug && \
 	cmake $(GENERATOR) $(FORCE_COLOR) -DCMAKE_BUILD_TYPE=Debug ${BUILD_FLAGS} -S ./ -B build/debug   && \
-	cmake --build build/debug  --target unittest
+	cmake --build build/debug
 
 release_bundled: pull
 	mkdir -p build/release && \
 	cmake $(GENERATOR) $(FORCE_COLOR) -DCMAKE_BUILD_TYPE=RelWithDebInfo ${BUILD_FLAGS} -S ./ -B build/release   && \
-	cmake --build build/release  --target unittest
+	cmake --build build/release
 
+# Regular builds produce only the loadable extension that can be loaded from a duckdb instance using `LOAD <path_to_extension>`
 debug: pull
 	mkdir -p build/debug && \
 	cmake $(GENERATOR) $(FORCE_COLOR) ./duckdb/CMakeLists.txt -DEXTERNAL_EXTENSION_DIRECTORIES=../src -DCMAKE_BUILD_TYPE=Debug ${BUILD_FLAGS}  -B build/debug   && \

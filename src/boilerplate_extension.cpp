@@ -3,13 +3,6 @@
 #include "boilerplate_extension.hpp"
 
 #include "duckdb.hpp"
-#ifndef DUCKDB_AMALGAMATION
-#include "duckdb/common/arrow/result_arrow_wrapper.hpp"
-#include "duckdb/common/arrow/arrow_appender.hpp"
-#include "duckdb/common/arrow/arrow_converter.hpp"
-#include "duckdb/parser/parsed_data/create_table_function_info.hpp"
-#include "duckdb/function/table/arrow.hpp"
-#endif
 
 namespace duckdb {
 
@@ -17,17 +10,18 @@ inline int32_t hello_fun(string_t what) {
     return what.GetSize() + 5;
 }
 
-void BoilerPlateExtension::Load(DuckDB &db) {
-	auto instance = *db.instance;
-    Connection con(instance);
+static void LoadInternal(DatabaseInstance &instance) {
+	Connection con(instance);
     con.BeginTransaction();
     con.CreateScalarFunction<int32_t, string_t>("hello", {LogicalType(LogicalTypeId::VARCHAR)},
                                                 LogicalType(LogicalTypeId::INTEGER), &hello_fun);
-    catalog.CreateFunction(client_context, &hello_alias_info);
-
     con.Commit();
 }
-std::string BoilerPlateExtension::Name() {
+
+void BoilerplateExtension::Load(DuckDB &db) {
+	LoadInternal(*db.instance);
+}
+std::string BoilerplateExtension::Name() {
 	return "boilerplate";
 }
 
