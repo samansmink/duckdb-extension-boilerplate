@@ -42,14 +42,13 @@ jobs:
 
     - name: Update DuckDB submodule
       run: |
-        git config --global --add safe.directory '*'
+#        git config --global --add safe.directory '*'
         make pull
 
     - uses: ./duckdb/.github/actions/ubuntu_16_setup
 
     # Build extension
-    - name: Deploy
-      if: ${{ inputs.deploy_as != '' }}
+    - name: Build extension
       shell: bash
       run: |
         make release
@@ -59,7 +58,7 @@ jobs:
       if: ${{ inputs.deploy_as != '' }}
       shell: bash
       run: |
-        cd  ${{ inputs.build_dir}}
+        cd  build/release
         ./scripts/extension-upload.sh bogus_platform bogus_version ${{ secrets.S3_BUCKET }} 0
 
     - name: Test
