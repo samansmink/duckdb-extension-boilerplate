@@ -19,6 +19,11 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Update DuckDB submodule
+      run: |
+        git config --global --add safe.directory '*'
+        make pull
+
     - uses: ./duckdb/.github/actions/ubuntu_16_setup
 
     # Build extension
