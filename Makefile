@@ -30,23 +30,23 @@ clean:
 	rm -rf build
 
 # Bundled builds will produce binaries with the extension already linked into them
-debug_bundled: pull
+debug_bundled:
 	mkdir -p  build/debug && \
 	cmake $(GENERATOR) $(FORCE_COLOR) -DCMAKE_BUILD_TYPE=Debug ${BUILD_FLAGS} -S ./ -B build/debug   && \
 	cmake --build build/debug
 
-release_bundled: pull
+release_bundled:
 	mkdir -p build/release && \
 	cmake $(GENERATOR) $(FORCE_COLOR) -DCMAKE_BUILD_TYPE=RelWithDebInfo ${BUILD_FLAGS} -S ./ -B build/release   && \
 	cmake --build build/release
 
 # Regular builds produce only the loadable extension that can be loaded from a duckdb instance using `LOAD <path_to_extension>`
-debug: pull
+debug:
 	mkdir -p build/debug && \
 	cmake $(GENERATOR) $(FORCE_COLOR) ./duckdb/CMakeLists.txt -DEXTERNAL_EXTENSION_DIRECTORIES=../src -DCMAKE_BUILD_TYPE=Debug ${BUILD_FLAGS}  -B build/debug   && \
 	cmake --build build/debug
 
-release: pull
+release:
 	mkdir -p build/release && \
 	cmake $(GENERATOR) $(FORCE_COLOR) ./duckdb/CMakeLists.txt -DEXTERNAL_EXTENSION_DIRECTORIES=../src -DCMAKE_BUILD_TYPE=RelWithDebInfo ${BUILD_FLAGS}  -B build/release   && \
 	cmake --build build/release
