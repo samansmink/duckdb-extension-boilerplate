@@ -4,30 +4,26 @@ cmake_minimum_required(VERSION 2.8.12)
 set(TARGET_NAME boilerplate)
 project(${TARGET_NAME})
 
-if(DEFINED EXTERNAL_EXTENSION_DIRECTORIES)
-    # Building from DuckDB CMake
-    add_subdirectory(src)
-else()
-    # Building duckdb within the extension
-    set(EXTENSION_CLASS ${TARGET_NAME}Extension)
-    string(SUBSTRING ${TARGET_NAME} 0 1 FIRST_LETTER)
-    string(TOUPPER ${FIRST_LETTER} FIRST_LETTER)
-    string(REGEX REPLACE "^.(.*)" "${FIRST_LETTER}\\1" EXTENSION_CLASS
-            "${TARGET_NAME}")
+# This functions registers the name in the list of OOTEs and sets the required variables for duckdb to generate
+# the required include and LoadExtension code
+function(register_duckdb_oote NAME PATH SHOULD_LINK)
+    if (NOT DEFINED DUCKDB_OOTE_EXTENSION_NAMES)
+        set(DUCKDB_OOTE_EXTENSION_NAMES "" PARENT_SCOPE)
+    endif()
+    list(APPEND DUCKDB_OOTE_EXTENSION_NAMES ${NAME})
+    set(DUCKDB_OOTE_EXTENSION_NAMES ${DUCKDB_OOTE_EXTENSION_NAMES} PARENT_SCOPE)
+    set(DUCKDB_OOTE_EXTENSION_${NAME}_PATH ${PATH} PARENT_SCOPE)
+    set(DUCKDB_OOTE_EXTENSION_${NAME}_SHOULD_LINK ${SHOULD_LINK} PARENT_SCOPE)
+endfunction(register_duckdb_oote)
 
-    cmake_policy(SET CMP0079 NEW)
+cmake_policy(SET CMP0079 NEW)
 
-    include_directories(src/include)
-    add_compile_definitions(DUCKDB_OUT_OF_TREE)
-    add_compile_definitions(DUCKDB_EXTENSION_NAME=${TARGET_NAME})
-    add_compile_definitions(DUCKDB_EXTENSION_CLASS=${EXTENSION_CLASS}Extension)
-    add_compile_definitions(DUCKDB_EXTENSION_HEADER="${TARGET_NAME}_extension.hpp")
+include_directories(src/include)
 
-    # Todo: src here is confusing, because this will result in the build folder being called src
-    set(EXTERNAL_EXTENSION_DIRECTORIES ../src)
+# Register the OOTE for DuckDB to build it.
+register_duckdb_oote(${TARGET_NAME} "../src" "TRUE")
 
-    add_subdirectory(duckdb duckdb_library)
+add_subdirectory(duckdb)
 
-    target_link_libraries(duckdb ${TARGET_NAME}_extension)
-    target_link_libraries(duckdb_static ${TARGET_NAME}_extension)
-endif()
+target_link_libraries(duckdb ${TARGET_NAME}_extension)
+target_link_libraries(duckdb_static ${TARGET_NAME}_extension)

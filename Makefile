@@ -40,17 +40,6 @@ release_bundled:
 	cmake $(GENERATOR) $(FORCE_COLOR) -DCMAKE_BUILD_TYPE=RelWithDebInfo ${BUILD_FLAGS} -S ./ -B build/release   && \
 	cmake --build build/release
 
-# Regular builds produce only the loadable extension that can be loaded from a duckdb instance using `LOAD <path_to_extension>`
-debug:
-	mkdir -p build/debug && \
-	cmake $(GENERATOR) $(FORCE_COLOR) ./duckdb/CMakeLists.txt -DEXTERNAL_EXTENSION_DIRECTORIES=../src -DCMAKE_BUILD_TYPE=Debug ${BUILD_FLAGS}  -B build/debug   && \
-	cmake --build build/debug
-
-release:
-	mkdir -p build/release && \
-	cmake $(GENERATOR) $(FORCE_COLOR) ./duckdb/CMakeLists.txt -DEXTERNAL_EXTENSION_DIRECTORIES=../src -DCMAKE_BUILD_TYPE=RelWithDebInfo ${BUILD_FLAGS}  -B build/release   && \
-	cmake --build build/release
-
 test_release:
 	./build/release/duckdb/test/unittest --test-dir . "[sql]"
 

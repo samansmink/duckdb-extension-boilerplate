@@ -4,13 +4,13 @@
 
 # Before we load the extension, this will fail
 statement error
-SELECT boilerplatify('World');
+SELECT do_a_boilerplate();
 
 # Require statement will ensure this test is run with this extension loaded
 require boilerplate
 
 # Confirm the extension works
 query I
-SELECT boilerplatify('World');
+SELECT do_a_boilerplate();
 ----
-10
+I'm a boilerplate!

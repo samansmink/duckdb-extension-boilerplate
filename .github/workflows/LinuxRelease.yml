@@ -166,6 +166,8 @@ jobs:
           make release
 
       # TODO: when adding S3 uploads, this can do remote tests
+
+      # This doesnt work, the script cannot handle the fact that we build from a different cmake root
       - name: Test
         shell: bash
         run: |

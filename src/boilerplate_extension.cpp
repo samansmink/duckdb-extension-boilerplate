@@ -1,20 +1,26 @@
 #define DUCKDB_EXTENSION_MAIN
 
 #include "boilerplate_extension.hpp"
-
 #include "duckdb.hpp"
+
+#include <duckdb/parser/parsed_data/create_scalar_function_info.hpp>
 
 namespace duckdb {
 
-inline int32_t hello_fun(string_t what) {
-    return what.GetSize() + 5;
+inline void BoilerPlateScalarFun(DataChunk &args, ExpressionState &state, Vector &result) {
+    result.Reference(Value("I'm a boilerplate!"));
 }
 
 static void LoadInternal(DatabaseInstance &instance) {
 	Connection con(instance);
     con.BeginTransaction();
-    con.CreateScalarFunction<int32_t, string_t>("boilerplatify", {LogicalType(LogicalTypeId::VARCHAR)},
-                                                LogicalType(LogicalTypeId::INTEGER), &hello_fun);
+
+    auto &catalog = Catalog::GetCatalog(*con.context);
+
+    CreateScalarFunctionInfo boilerplatify_info(
+            ScalarFunction("do_a_boilerplate", {}, LogicalType::VARCHAR, BoilerPlateScalarFun));
+    boilerplatify_info.on_conflict = OnCreateConflict::ALTER_ON_CONFLICT;
+    catalog.CreateFunction(*con.context, &boilerplatify_info);
     con.Commit();
 }
 

@@ -1,4 +1,4 @@
-name: MacOS
+name: Windows
 on: [push, pull_request,repository_dispatch]
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref || '' }}-${{ github.base_ref || '' }}-${{ github.ref != 'refs/heads/master' || github.sha }}
@@ -8,7 +8,6 @@ jobs:
   win-extensions-64:
     name: Windows Extensions (x64)
     runs-on: windows-latest
-    needs: win-release-64
 
     steps:
       - uses: actions/checkout@v3
