@@ -29,13 +29,12 @@ pull:
 clean:
 	rm -rf build
 
-# Bundled builds will produce binaries with the extension already linked into them
-debug_bundled:
+debug:
 	mkdir -p  build/debug && \
 	cmake $(GENERATOR) $(FORCE_COLOR) -DCMAKE_BUILD_TYPE=Debug ${BUILD_FLAGS} -S ./ -B build/debug   && \
 	cmake --build build/debug
 
-release_bundled:
+release:
 	mkdir -p build/release && \
 	cmake $(GENERATOR) $(FORCE_COLOR) -DCMAKE_BUILD_TYPE=RelWithDebInfo ${BUILD_FLAGS} -S ./ -B build/release   && \
 	cmake --build build/release
