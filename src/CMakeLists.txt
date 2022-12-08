@@ -4,17 +4,9 @@ cmake_minimum_required(VERSION 2.8.12)
 set(TARGET_NAME boilerplate)
 
 set(EXTENSION_NAME ${TARGET_NAME}_extension)
-
-# TODO should this be in the boilerplate?
-if (OSX_BUILD_UNIVERSAL EQUAL 1)
-    set(OSX_UNIVERSAL_FLAG -DCMAKE_OSX_ARCHITECTURES=x86_64$<SEMICOLON>arm64)
-else()
-    set(OSX_UNIVERSAL_FLAG "")
-endif()
-
 project(${TARGET_NAME})
-
 include_directories(include)
+
 set(EXTENSION_SOURCES boilerplate_extension.cpp)
 add_library(${EXTENSION_NAME} STATIC ${EXTENSION_SOURCES})
 
