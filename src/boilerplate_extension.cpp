@@ -7,7 +7,7 @@
 
 namespace duckdb {
 
-inline void BoilerPlateScalarFun(DataChunk &args, ExpressionState &state, Vector &result) {
+inline void BoilerplateScalarFun(DataChunk &args, ExpressionState &state, Vector &result) {
     result.Reference(Value("I'm a boilerplate!"));
 }
 
@@ -17,10 +17,10 @@ static void LoadInternal(DatabaseInstance &instance) {
 
     auto &catalog = Catalog::GetCatalog(*con.context);
 
-    CreateScalarFunctionInfo boilerplatify_info(
-            ScalarFunction("do_a_boilerplate", {}, LogicalType::VARCHAR, BoilerPlateScalarFun));
-    boilerplatify_info.on_conflict = OnCreateConflict::ALTER_ON_CONFLICT;
-    catalog.CreateFunction(*con.context, &boilerplatify_info);
+    CreateScalarFunctionInfo boilerplate_fun_info(
+            ScalarFunction("do_like_a_boilerplate", {}, LogicalType::VARCHAR, BoilerplateScalarFun));
+    boilerplate_fun_info.on_conflict = OnCreateConflict::ALTER_ON_CONFLICT;
+    catalog.CreateFunction(*con.context, &boilerplate_fun_info);
     con.Commit();
 }
 

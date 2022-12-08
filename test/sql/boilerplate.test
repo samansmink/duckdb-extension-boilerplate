@@ -11,6 +11,6 @@ require boilerplate
 
 # Confirm the extension works
 query I
-SELECT do_a_boilerplate();
+SELECT do_like_a_boilerplate();
 ----
 I'm a boilerplate!
