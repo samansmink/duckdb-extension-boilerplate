@@ -1,29 +1,27 @@
 cmake_minimum_required(VERSION 2.8.12)
 
-# Configure extension name here
-set(TARGET_NAME boilerplate)
-project(${TARGET_NAME})
+if(${CMAKE_PROJECT_NAME} STREQUAL DuckDB)
+    # Building from within duckdb
+    add_subdirectory(src)
+else()
+    # Building from extension,
+    set(TARGET_NAME boilerplate)
+    project(${TARGET_NAME})
 
-# This functions registers the name in the list of OOTEs and sets the required variables for duckdb to generate
-# the required include and LoadExtension code
-function(register_duckdb_oote NAME PATH SHOULD_LINK)
+    cmake_policy(SET CMP0079 NEW)
+
+    include_directories(src/include)
+
+    # Register this extension as OOTE in DuckDB build
     if (NOT DEFINED DUCKDB_OOTE_EXTENSION_NAMES)
         set(DUCKDB_OOTE_EXTENSION_NAMES "" PARENT_SCOPE)
     endif()
-    list(APPEND DUCKDB_OOTE_EXTENSION_NAMES ${NAME})
-    set(DUCKDB_OOTE_EXTENSION_NAMES ${DUCKDB_OOTE_EXTENSION_NAMES} PARENT_SCOPE)
-    set(DUCKDB_OOTE_EXTENSION_${NAME}_PATH ${PATH} PARENT_SCOPE)
-    set(DUCKDB_OOTE_EXTENSION_${NAME}_SHOULD_LINK ${SHOULD_LINK} PARENT_SCOPE)
-endfunction(register_duckdb_oote)
+    list(APPEND DUCKDB_OOTE_EXTENSION_NAMES ${TARGET_NAME})
+    set(DUCKDB_OOTE_EXTENSION_${TARGET_NAME}_PATH ../src)
+    set(DUCKDB_OOTE_EXTENSION_${TARGET_NAME}_SHOULD_LINK TRUE)
 
-cmake_policy(SET CMP0079 NEW)
+    add_subdirectory(duckdb)
 
-include_directories(src/include)
-
-# Register the OOTE for DuckDB to build it.
-register_duckdb_oote(${TARGET_NAME} "../src" "TRUE")
-
-add_subdirectory(duckdb)
-
-target_link_libraries(duckdb ${TARGET_NAME}_extension)
-target_link_libraries(duckdb_static ${TARGET_NAME}_extension)
+    target_link_libraries(duckdb ${TARGET_NAME}_extension)
+    target_link_libraries(duckdb_static ${TARGET_NAME}_extension)
+endif()
