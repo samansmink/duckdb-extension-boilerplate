@@ -19,7 +19,7 @@ jobs:
           submodules: 'true'
 
       - name: Install Ninja
-          run: brew install ninja
+        run: brew install ninja
 
       - uses: actions/setup-python@v2
         with:
