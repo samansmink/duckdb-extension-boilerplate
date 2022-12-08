@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12)
 
-if(DEFINED ${CMAKE_PROJECT_NAME} AND ${CMAKE_PROJECT_NAME} STREQUAL DuckDB)
+if(DEFINED CMAKE_PROJECT_NAME AND ${CMAKE_PROJECT_NAME} STREQUAL DuckDB)
     # Building from within DuckDB
     add_subdirectory(src)
 else()
