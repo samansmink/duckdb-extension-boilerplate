@@ -18,13 +18,3 @@ install(
   EXPORT "${DUCKDB_EXPORT_SET}"
   LIBRARY DESTINATION "${INSTALL_LIB_DIR}"
   ARCHIVE DESTINATION "${INSTALL_LIB_DIR}")
-
-# Filthy hack: currently duckdb ci expects extensions to build their loadable extensions to their root build folder
-#              so if we're building from within duckdb, we perform this copy to move the file to the expected location
-# FIXME: DuckDB should provide a neat way for extensions to specify where the loadable_execution will be located
-set(LOADABLE_EXTENSION_NAME ${TARGET_NAME}_loadable_extension)
-add_custom_command(
-        TARGET ${LOADABLE_EXTENSION_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.duckdb_extension
-        ${CMAKE_CURRENT_BINARY_DIR}/../)
