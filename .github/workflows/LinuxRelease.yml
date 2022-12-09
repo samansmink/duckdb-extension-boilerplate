@@ -12,7 +12,7 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.S3_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_KEY }}
-      AWS_DEFAULT_REGION: us-east-1
+      AWS_DEFAULT_REGION: ${{ secrets.S3_REGION }}
 
     steps:
     # Todo we now do a lot of this shit twice, because we cannot get submodule without a recent git

@@ -8,6 +8,9 @@ jobs:
   win-extensions-64:
     name: Windows Extensions (x64)
     runs-on: windows-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ inputs.s3_id }}
+      AWS_SECRET_ACCESS_KEY: ${{ inputs.s3_key }}
 
     steps:
       - uses: actions/checkout@v3

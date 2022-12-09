@@ -11,6 +11,8 @@ jobs:
     env:
       OSX_BUILD_UNIVERSAL: 1
       GEN: ninja
+      AWS_ACCESS_KEY_ID: ${{ inputs.s3_id }}
+      AWS_SECRET_ACCESS_KEY: ${{ inputs.s3_key }}
 
     steps:
       - uses: actions/checkout@v3
@@ -43,9 +45,9 @@ jobs:
           path: |
             build/release/duckdb/extension/*/*.duckdb_extension
 
-#    # Deploy binary # todo_replace bogus version when we have confirmed this will not bork production
-#    - name: Deploy
-#      shell: bash
-#      run: |
-#        ./duckdb/scripts/extension-upload.sh bogus_platform_amd64 bogus_version ${{ secrets.S3_BUCKET }} 0
-#        ./duckdb/scripts/extension-upload.sh bogus_platform_arm64 bogus_version ${{ secrets.S3_BUCKET }} 0
+      # Deploy binary # todo_replace bogus version when we have confirmed this will not bork production
+      - name: Deploy
+        shell: bash
+        run: |
+          ./duckdb/scripts/extension-upload.sh bogus_platform_amd64 bogus_version ${{ secrets.S3_BUCKET }} 0
+          ./duckdb/scripts/extension-upload.sh bogus_platform_arm64 bogus_version ${{ secrets.S3_BUCKET }} 0
