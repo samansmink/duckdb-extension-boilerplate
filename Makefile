@@ -2,6 +2,9 @@
 
 all: release
 
+MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
+PROJ_DIR := $(dir $(MKFILE_PATH))
+
 OSX_BUILD_UNIVERSAL_FLAG=
 ifeq (${OSX_BUILD_UNIVERSAL}, 1)
 	OSX_BUILD_UNIVERSAL_FLAG=-DOSX_BUILD_UNIVERSAL=1
@@ -22,6 +25,9 @@ ifeq (${BUILD_R}, 1)
 	BUILD_FLAGS:=${EXTENSIONS} -DBUILD_R=1
 endif
 
+# These flags will make DuckDB build the extension
+EXTENSION_FLAGS=-DDUCKDB_OOTE_EXTENSION_NAMES="boilerplate" -DDUCKDB_OOTE_EXTENSION_boilerplate_PATH="$(PROJ_DIR)src" -DDUCKDB_OOTE_EXTENSION_boilerplate_SHOULD_LINK="TRUE"
+
 pull:
 	git submodule init
 	git submodule update --recursive --remote
@@ -31,19 +37,21 @@ clean:
 
 debug:
 	mkdir -p  build/debug && \
-	cmake $(GENERATOR) $(FORCE_COLOR) -DCMAKE_BUILD_TYPE=Debug ${BUILD_FLAGS} -S ./ -B build/debug   && \
+	cmake $(GENERATOR) $(FORCE_COLOR) -DCMAKE_BUILD_TYPE=Debug ${BUILD_FLAGS} -S ./duckdb/ -B build/debug   && \
 	cmake --build build/debug
 
 release:
 	mkdir -p build/release && \
-	cmake $(GENERATOR) $(FORCE_COLOR) -DCMAKE_BUILD_TYPE=RelWithDebInfo ${BUILD_FLAGS} -S ./ -B build/release   && \
+	cmake $(GENERATOR) $(FORCE_COLOR) $(EXTENSION_FLAGS) -DCMAKE_BUILD_TYPE=Release ${BUILD_FLAGS} -S ./duckdb/ -B build/release   && \
 	cmake --build build/release
 
-test_release:
-	./build/release/duckdb/test/unittest --test-dir . "[sql]"
+test: test_release
 
-test_debug:
-	./build/debug/duckdb/test/unittest --test-dir . "[sql]"
+test_release: release
+	./build/release/test/unittest --test-dir . "[sql]"
+
+test_debug: debug
+	./build/debug/test/unittest --test-dir . "[sql]"
 
 # TODO make this clever
 format:
