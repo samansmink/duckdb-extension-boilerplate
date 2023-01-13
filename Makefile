@@ -26,7 +26,7 @@ ifeq (${BUILD_R}, 1)
 endif
 
 # These flags will make DuckDB build the extension
-EXTENSION_FLAGS=-DDUCKDB_OOTE_EXTENSION_NAMES="boilerplate" -DDUCKDB_OOTE_EXTENSION_boilerplate_PATH="$(PROJ_DIR)src" -DDUCKDB_OOTE_EXTENSION_boilerplate_SHOULD_LINK="TRUE"
+EXTENSION_FLAGS=-DDUCKDB_OOTE_EXTENSION_NAMES="boilerplate" -DDUCKDB_OOTE_EXTENSION_boilerplate_PATH="$(PROJ_DIR)" -DDUCKDB_OOTE_EXTENSION_boilerplate_SHOULD_LINK="TRUE" -DDUCKDB_OOTE_EXTENSION_boilerplate_INCLUDE_PATH="$(PROJ_DIR)src/include"
 
 pull:
 	git submodule init
