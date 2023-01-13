@@ -18,7 +18,7 @@ static void LoadInternal(DatabaseInstance &instance) {
     auto &catalog = Catalog::GetCatalog(*con.context);
 
     CreateScalarFunctionInfo boilerplate_fun_info(
-            ScalarFunction("do_like_a_boilerplate", {}, LogicalType::VARCHAR, BoilerplateScalarFun));
+            ScalarFunction("boilerplate", {}, LogicalType::VARCHAR, BoilerplateScalarFun));
     boilerplate_fun_info.on_conflict = OnCreateConflict::ALTER_ON_CONFLICT;
     catalog.CreateFunction(*con.context, &boilerplate_fun_info);
     con.Commit();

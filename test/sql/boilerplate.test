@@ -4,7 +4,9 @@
 
 # Before we load the extension, this will fail
 statement error
-SELECT do_a_boilerplate();
+SELECT boilerplate();
+----
+Catalog Error: Scalar Function with name do_like_a_boilerplate does not exist!
 
 # Require statement will ensure this test is run with this extension loaded
 require boilerplate
