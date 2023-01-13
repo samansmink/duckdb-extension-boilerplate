@@ -37,7 +37,7 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          ./duckdb/scripts/extension-upload-test.sh local oote
+          ./duckdb/scripts/extension-upload-test.sh local
 
       - uses: actions/upload-artifact@v2
         with:
