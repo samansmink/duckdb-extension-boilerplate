@@ -5,7 +5,7 @@ set(TARGET_NAME boilerplate)
 
 set(EXTENSION_NAME ${TARGET_NAME}_extension)
 project(${TARGET_NAME})
-include_directories(include)
+include_directories(src/include)
 
 set(EXTENSION_SOURCES src/boilerplate_extension.cpp)
 add_library(${EXTENSION_NAME} STATIC ${EXTENSION_SOURCES})
