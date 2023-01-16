@@ -81,8 +81,7 @@ jobs:
         fetch-depth: 0
         submodules: 'true'
 
-    # TODO: move CENTOS7 setup to action, use ninja in main duckdb
-    - uses: ./duckdb/.github/actions/ubuntu_16_setup
+    - uses: ./duckdb/.github/actions/centos_7_setup
       with:
         openssl: 0
 
