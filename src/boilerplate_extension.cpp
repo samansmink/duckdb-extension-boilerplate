@@ -15,7 +15,7 @@ static void LoadInternal(DatabaseInstance &instance) {
 	Connection con(instance);
     con.BeginTransaction();
 
-    auto &catalog = Catalog::GetCatalog(*con.context);
+    auto &catalog = Catalog::GetSystemCatalog(*con.context);
 
     CreateScalarFunctionInfo boilerplate_fun_info(
             ScalarFunction("boilerplate", {}, LogicalType::VARCHAR, BoilerplateScalarFun));
