@@ -33,7 +33,7 @@ jobs:
         run: |
           make release
 
-      # TODO: when adding S3 uploads, this can do remote tests
+      # TODO: when adding  S3 uploads, this can do remote tests
       - name: Test
         shell: bash
         run: |
