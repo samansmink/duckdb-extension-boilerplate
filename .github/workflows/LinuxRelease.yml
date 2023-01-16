@@ -153,12 +153,14 @@ jobs:
           make release
 
       # TODO: when adding S3 uploads, this can do remote tests
+      # TODO2: we should check for main branch for deploy, and only run local for others
 
       # This doesnt work, the script cannot handle the fact that we build from a different cmake root
       - name: Test
         shell: bash
         run: |
           ./duckdb/scripts/extension-upload-test.sh local oote
+
 
       - uses: actions/upload-artifact@v2
         with:
