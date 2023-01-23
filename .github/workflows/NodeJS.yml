@@ -1,0 +1,42 @@
+#
+# NOTE: if NodeJS tests are unused, deleting this file or disabling the workflow on GitHub will speed up CI
+#
+
+name: NodeJS
+on: [push, pull_request,repository_dispatch]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref || '' }}-${{ github.base_ref || '' }}-${{ github.ref != 'refs/heads/master' || github.sha }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  nodejs:
+    name: NodeJS
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        target_arch: [ arm64 ]
+    env:
+      GEN: ninja
+
+    steps:
+      - name: Install Ninja
+        run: brew install ninja
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: 'true'
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Build DuckDB (Node)
+        run: make build_node_debug
+
+      - name: Run Node client tests
+        run: make test_node_debug
