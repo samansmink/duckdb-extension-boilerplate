@@ -6,13 +6,13 @@
 statement error
 SELECT boilerplate();
 ----
-Catalog Error: Scalar Function with name do_like_a_boilerplate does not exist!
+Catalog Error: Scalar Function with name boilerplate does not exist!
 
 # Require statement will ensure this test is run with this extension loaded
 require boilerplate
 
 # Confirm the extension works
 query I
-SELECT do_like_a_boilerplate();
+SELECT boilerplate();
 ----
 I'm a boilerplate!

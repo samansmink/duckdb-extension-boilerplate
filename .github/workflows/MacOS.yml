@@ -43,7 +43,7 @@ jobs:
         with:
           name: macos-extensions-universal
           path: |
-            build/release/duckdb/extension/*/*.duckdb_extension
+            build/release/extension/*/*.duckdb_extension
 
       # Deploy binary # todo_replace bogus version when we have confirmed this will not bork production
       - name: Deploy

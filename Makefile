@@ -17,13 +17,7 @@ endif
 
 BUILD_FLAGS=-DEXTENSION_STATIC_BUILD=1 -DBUILD_TPCH_EXTENSION=1 -DBUILD_PARQUET_EXTENSION=1 ${OSX_BUILD_UNIVERSAL_FLAG}
 
-ifeq (${BUILD_PYTHON}, 1)
-	BUILD_FLAGS:=${EXTENSIONS} -DBUILD_PYTHON=1 -DBUILD_JSON_EXTENSION=1 -DBUILD_FTS_EXTENSION=1 -DBUILD_TPCH_EXTENSION=1 -DBUILD_VISUALIZER_EXTENSION=1 -DBUILD_TPCDS_EXTENSION=1
-endif
-
-ifeq (${BUILD_R}, 1)
-	BUILD_FLAGS:=${EXTENSIONS} -DBUILD_R=1
-endif
+CLIENT_FLAGS := ""
 
 # These flags will make DuckDB build the extension
 EXTENSION_FLAGS=-DDUCKDB_OOTE_EXTENSION_NAMES="boilerplate" -DDUCKDB_OOTE_EXTENSION_boilerplate_PATH="$(PROJ_DIR)" -DDUCKDB_OOTE_EXTENSION_boilerplate_SHOULD_LINK="TRUE" -DDUCKDB_OOTE_EXTENSION_boilerplate_INCLUDE_PATH="$(PROJ_DIR)src/include"
@@ -34,17 +28,40 @@ pull:
 
 clean:
 	rm -rf build
+	rm -rf testext
+	cd duckdb && make clean
 
+# Main build
 debug:
 	mkdir -p  build/debug && \
-	cmake $(GENERATOR) $(FORCE_COLOR) -DCMAKE_BUILD_TYPE=Debug ${BUILD_FLAGS} -S ./duckdb/ -B build/debug   && \
+	cmake $(GENERATOR) $(FORCE_COLOR) $(EXTENSION_FLAGS) ${CLIENT_FLAGS} -DCMAKE_BUILD_TYPE=Debug ${BUILD_FLAGS} -S ./duckdb/ -B build/debug   && \
 	cmake --build build/debug
 
 release:
 	mkdir -p build/release && \
-	cmake $(GENERATOR) $(FORCE_COLOR) $(EXTENSION_FLAGS) -DCMAKE_BUILD_TYPE=Release ${BUILD_FLAGS} -S ./duckdb/ -B build/release   && \
+	cmake $(GENERATOR) $(FORCE_COLOR) $(EXTENSION_FLAGS) ${CLIENT_FLAGS} -DCMAKE_BUILD_TYPE=Release ${BUILD_FLAGS} -S ./duckdb/ -B build/release   && \
 	cmake --build build/release
 
+# Client build
+debug_js: CLIENT_FLAGS=-DBUILD_NODE=1 -DBUILD_JSON_EXTENSION=1
+debug_js: debug
+
+debug_r: CLIENT_FLAGS=-DBUILD_R=1
+debug_r: debug
+
+debug_python: CLIENT_FLAGS=-DBUILD_PYTHON=1 -DBUILD_JSON_EXTENSION=1 -DBUILD_FTS_EXTENSION=1 -DBUILD_TPCH_EXTENSION=1 -DBUILD_VISUALIZER_EXTENSION=1 -DBUILD_TPCDS_EXTENSION=1
+debug_python: debug
+
+release_js: CLIENT_FLAGS=-DBUILD_NODE=1 -DBUILD_JSON_EXTENSION=1
+release_js: release
+
+release_r: CLIENT_FLAGS=-DBUILD_R=1
+release_r: release
+
+release_python: CLIENT_FLAGS=-DBUILD_PYTHON=1 -DBUILD_JSON_EXTENSION=1 -DBUILD_FTS_EXTENSION=1 -DBUILD_TPCH_EXTENSION=1 -DBUILD_VISUALIZER_EXTENSION=1 -DBUILD_TPCDS_EXTENSION=1
+release_python: debug
+
+# Main tests
 test: test_release
 
 test_release: release
@@ -52,6 +69,19 @@ test_release: release
 
 test_debug: debug
 	./build/debug/test/unittest --test-dir . "[sql]"
+
+# Client tests
+test_debug_js: debug_js
+	cd duckdb/tools/nodejs && npm run test-path -- "../../../test/nodejs/**/*.js"
+
+test_release_js: release_js
+	cd duckdb/tools/nodejs && npm run test-path -- "../../../test/nodejs/**/*.js"
+
+test_debug_python: debug_python
+	cd test/python && python3 -m pytest
+
+test_release_python: release_python
+	cd test/python && python3 -m pytest
 
 # TODO make this clever
 format:
