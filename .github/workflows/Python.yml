@@ -32,9 +32,9 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Build DuckDB (Python)
-        run: make build_python_debug
+      - name: Build DuckDB Python client
+        run: make debug_python
 
       - name: Run Python client tests
         run: |
-          (cd test/python && python -m pytest)
+          make test_debug_python

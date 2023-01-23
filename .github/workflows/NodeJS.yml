@@ -35,8 +35,8 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Build DuckDB (Node)
-        run: make build_node_debug
+      - name: Build DuckDB NodeJS client
+        run: make debug_js
 
-      - name: Run Node client tests
-        run: make test_node_debug
+      - name: Run NodeJS client tests
+        run: make test_debug_js

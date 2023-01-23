@@ -34,12 +34,12 @@ clean:
 # Main build
 debug:
 	mkdir -p  build/debug && \
-	cmake $(GENERATOR) $(FORCE_COLOR) $(EXTENSION_FLAGS) ${CLIENT_FLAGS} -DCMAKE_BUILD_TYPE=Debug ${BUILD_FLAGS} -S ./duckdb/ -B build/debug   && \
+	cmake $(GENERATOR) $(FORCE_COLOR) $(EXTENSION_FLAGS) ${CLIENT_FLAGS} -DEXTENSION_STATIC_BUILD=1 -DCMAKE_BUILD_TYPE=Debug ${BUILD_FLAGS} -S ./duckdb/ -B build/debug && \
 	cmake --build build/debug
 
 release:
 	mkdir -p build/release && \
-	cmake $(GENERATOR) $(FORCE_COLOR) $(EXTENSION_FLAGS) ${CLIENT_FLAGS} -DCMAKE_BUILD_TYPE=Release ${BUILD_FLAGS} -S ./duckdb/ -B build/release   && \
+	cmake $(GENERATOR) $(FORCE_COLOR) $(EXTENSION_FLAGS) ${CLIENT_FLAGS} -DEXTENSION_STATIC_BUILD=1 -DCMAKE_BUILD_TYPE=Release ${BUILD_FLAGS} -S ./duckdb/ -B build/release && \
 	cmake --build build/release
 
 # Client build
@@ -71,12 +71,14 @@ test_debug: debug
 	./build/debug/test/unittest --test-dir . "[sql]"
 
 # Client tests
+test_js: test_debug_js
 test_debug_js: debug_js
 	cd duckdb/tools/nodejs && npm run test-path -- "../../../test/nodejs/**/*.js"
 
 test_release_js: release_js
 	cd duckdb/tools/nodejs && npm run test-path -- "../../../test/nodejs/**/*.js"
 
+test_python: test_debug_python
 test_debug_python: debug_python
 	cd test/python && python3 -m pytest
 

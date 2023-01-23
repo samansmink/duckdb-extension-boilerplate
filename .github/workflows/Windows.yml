@@ -30,10 +30,13 @@ jobs:
       # Build extension
       - name: Build extension
         shell: bash
+        env:
+          TREAT_WARNINGS_AS_ERRORS: 0
         run: |
           make release
 
       # TODO: when adding  S3 uploads, this can do remote tests
+      # TODO
       - name: Test
         shell: bash
         run: |
@@ -43,4 +46,4 @@ jobs:
         with:
           name: linux-extensions-64-aarch64
           path: |
-            build/release/extension/*/*.duckdb_extension
+            build/release/extension/boilerplate/boilerplate.duckdb_extension
