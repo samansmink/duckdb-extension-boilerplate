@@ -22,11 +22,6 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name: Install OpenSSL
-        shell: bash
-        run: |
-          choco install openssl -y --force
-
       # Build extension
       - name: Build extension
         shell: bash
