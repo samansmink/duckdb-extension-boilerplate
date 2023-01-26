@@ -1,7 +1,7 @@
 name: Windows
 on: [push, pull_request,repository_dispatch]
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref || '' }}-${{ github.base_ref || '' }}-${{ github.ref != 'refs/heads/master' || github.sha }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref || '' }}-${{ github.base_ref || '' }}-${{ github.ref != 'refs/heads/main' || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -58,7 +58,7 @@ jobs:
           if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
             pip install awscli
             ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION windows_amd64 $BUCKET_NAME
-          elif [[ "$GITHUB_REF" =~ ^(refs/heads/master)$ ]] ; then
+          elif [[ "$GITHUB_REF" =~ ^(refs/heads/main)$ ]] ; then
             pip install awscli
             ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION windows_amd64 $BUCKET_NAME
           fi
