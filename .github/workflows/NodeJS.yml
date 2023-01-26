@@ -15,10 +15,7 @@ defaults:
 jobs:
   nodejs:
     name: NodeJS
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        target_arch: [ arm64 ]
+    runs-on: ubuntu-latest
     env:
       GEN: ninja
 

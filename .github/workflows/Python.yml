@@ -15,7 +15,7 @@ defaults:
 jobs:
   python:
     name: Python
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     env:
       GEN: ninja
 
