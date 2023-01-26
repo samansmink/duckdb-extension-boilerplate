@@ -22,7 +22,6 @@ jobs:
         with:
           python-version: '3.7'
 
-      # Build extension
       - name: Build extension
         shell: bash
         env:
@@ -31,7 +30,6 @@ jobs:
           make release
 
       # TODO: when adding  S3 uploads, this can do remote tests
-      # TODO
       - name: Test
         shell: bash
         run: |
@@ -42,3 +40,25 @@ jobs:
           name: linux-extensions-64-aarch64
           path: |
             build/release/extension/boilerplate/boilerplate.duckdb_extension
+
+      # TODO also check if credentials are available for uploading
+      - name: Deploy
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.s3_id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.s3_key }}
+          AWS_DEFAULT_REGION: ${{ secrets.s3_region }}
+          BUCKET_NAME: ${{ secrets.bucket }}
+        run: |
+          cd duckdb
+          git fetch --tags
+          export DUCKDB_VERSION=`git tag --points-at HEAD`
+          export DUCKDB_VERSION=${DUCKDB_VERSION:=`git log -1 --format=%h`}
+          cd ..
+          if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
+            pip install awscli
+            ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION windows_amd64 $BUCKET_NAME
+          elif [[ "$GITHUB_REF" =~ ^(refs/heads/master)$ ]] ; then
+            pip install awscli
+            ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION windows_amd64 $BUCKET_NAME
+          fi

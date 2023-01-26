@@ -11,8 +11,6 @@ jobs:
     env:
       OSX_BUILD_UNIVERSAL: 1
       GEN: ninja
-      AWS_ACCESS_KEY_ID: ${{ inputs.s3_id }}
-      AWS_SECRET_ACCESS_KEY: ${{ inputs.s3_key }}
 
     steps:
       - uses: actions/checkout@v3
@@ -45,9 +43,28 @@ jobs:
           path: |
             build/release/extension/boilerplate/boilerplate.duckdb_extension
 
-      # Deploy binary # todo_replace bogus version when we have confirmed this will not bork production
+      # TODO also check if credentials are available for uploading
       - name: Deploy
         shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.s3_id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.s3_key }}
+          AWS_DEFAULT_REGION: ${{ secrets.s3_region }}
+          BUCKET_NAME: ${{ secrets.bucket }}
         run: |
-          ./duckdb/scripts/extension-upload.sh bogus_platform_amd64 bogus_version ${{ secrets.S3_BUCKET }} 0
-          ./duckdb/scripts/extension-upload.sh bogus_platform_arm64 bogus_version ${{ secrets.S3_BUCKET }} 0
+          cd duckdb
+          git fetch --tags
+          export DUCKDB_VERSION=`git tag --points-at HEAD`
+          echo $DUCKDB_VERSION
+          export DUCKDB_VERSION=${DUCKDB_VERSION:=`git log -1 --format=%h`}
+          echo $DUCKDB_VERSION
+          cd ..
+          if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
+            pip install awscli
+            ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION osx_amd64 $BUCKET_NAME
+            ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION osx_arm64 $BUCKET_NAME
+          elif [[ "$GITHUB_REF" =~ ^(refs/heads/master)$ ]] ; then
+            pip install awscli
+            ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION osx_amd64 $BUCKET_NAME
+            ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION osx_arm64 $BUCKET_NAME
+          fi

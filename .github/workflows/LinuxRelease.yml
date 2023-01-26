@@ -62,11 +62,21 @@ jobs:
         path: |
           build/release/extension/boilerplate/boilerplate.duckdb_extension
 
-#    # Deploy binary # todo_replace bogus version when we have confirmed this will not bork production
-#    - name: Deploy
-#      shell: bash
-#      run: |
-#        ./scripts/extension-upload.sh bogus_platform bogus_version ${{ secrets.S3_BUCKET }} 0
+    - name: Deploy
+      shell: bash
+      run: |
+        cd duckdb
+        git fetch --tags
+        export DUCKDB_VERSION=`git tag --points-at HEAD`
+        export DUCKDB_VERSION=${DUCKDB_VERSION:=`git log -1 --format=%h`}
+        cd ..
+        if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
+          pip install awscli
+          ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION linux_amd64 test-bucket-ceiveran
+        elif [[ "$GITHUB_REF" =~ ^(refs/heads/master)$ ]] ; then
+          pip install awscli
+          ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION linux_amd64 test-bucket-ceiveran
+        fi
 
   manylinux-extensions:
     name: Linux Extensions (x64, GCC4)
@@ -103,11 +113,21 @@ jobs:
         path: |
           build/release/extension/boilerplate/boilerplate.duckdb_extension
 
-#    # Deploy binary # todo_replace bogus version when we have confirmed this will not bork production
-#    - name: Deploy
-#      shell: bash
-#      run: |
-#        ./duckdb/scripts/extension-upload.sh bogus_platform bogus_version ${{ secrets.S3_BUCKET }} 0
+    - name: Deploy
+      shell: bash
+      run: |
+        cd duckdb
+        git fetch --tags
+        export DUCKDB_VERSION=`git tag --points-at HEAD`
+        export DUCKDB_VERSION=${DUCKDB_VERSION:=`git log -1 --format=%h`}
+        cd ..
+        if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
+          pip install awscli
+          ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION linux_amd64_gcc4 test-bucket-ceiveran
+        elif [[ "$GITHUB_REF" =~ ^(refs/heads/master)$ ]] ; then
+          pip install awscli
+          ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION linux_amd64_gcc4 test-bucket-ceiveran
+        fi
 
   linux-extensions-64-aarch64:
     name: Linux Extensions (aarch64)
@@ -166,3 +186,19 @@ jobs:
           name: linux-extensions-64-aarch64
           path: |
             build/release/extension/boilerplate/boilerplate.duckdb_extension
+
+      - name: Deploy
+        shell: bash
+        run: |
+          cd duckdb
+          git fetch --tags
+          export DUCKDB_VERSION=`git tag --points-at HEAD`
+          export DUCKDB_VERSION=${DUCKDB_VERSION:=`git log -1 --format=%h`}
+          cd ..
+          if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
+            pip install awscli
+            ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION linux_arm64 test-bucket-ceiveran
+          elif [[ "$GITHUB_REF" =~ ^(refs/heads/master)$ ]] ; then
+            pip install awscli
+            ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION linux_arm64 test-bucket-ceiveran
+          fi
