@@ -37,6 +37,9 @@ jobs:
       - name: Build DuckDB Python client
         run: make debug_python
 
+      - name: Install Python test dependencies
+        run: python -m pip install --upgrade pip
+
       - name: Run Python client tests
         run: |
           make test_debug_python
