@@ -21,7 +21,9 @@ jobs:
 
     steps:
       - name: Install Ninja
-        run: brew install ninja
+        run: |
+          apt-get update -y -qq
+          apt-get install -y -qq ninja-build
 
       - uses: actions/checkout@v2
         with:
