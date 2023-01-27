@@ -49,7 +49,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.S3_REGION }}
           BUCKET_NAME: ${{ secrets.S3_BUCKET }}
-          TEST_VARIABLE: ${{ env.TEST_VARIABLE }
+          TEST_VARIABLE: ${{ env.TEST_VARIABLE }}
         run: |
           echo $TEST_VARIABLE
           mkdir -p build/release/extension/boilerplate
