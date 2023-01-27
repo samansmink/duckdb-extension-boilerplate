@@ -52,6 +52,8 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.s3_region }}
           BUCKET_NAME: ${{ secrets.bucket }}
         run: |
+          mkdir -p build/release/extension/boilerplate
+          touch build/release/extension/boilerplate/boilerplate.duckdb_extension
           cd duckdb
           git fetch --tags
           export DUCKDB_VERSION=`git tag --points-at HEAD`

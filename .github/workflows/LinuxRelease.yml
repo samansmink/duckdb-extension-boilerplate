@@ -65,16 +65,18 @@ jobs:
     - name: Deploy
       shell: bash
       run: |
+        mkdir -p build/release/extension/boilerplate
+        touch build/release/extension/boilerplate/boilerplate.duckdb_extension
         cd duckdb
         git fetch --tags
         export DUCKDB_VERSION=`git tag --points-at HEAD`
         export DUCKDB_VERSION=${DUCKDB_VERSION:=`git log -1 --format=%h`}
         cd ..
         if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
-          pip install awscli
+          python -m pip install awscli
           ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION linux_amd64 test-bucket-ceiveran
         elif [[ "$GITHUB_REF" =~ ^(refs/heads/main)$ ]] ; then
-          pip install awscli
+          python -m pip install awscli
           ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION linux_amd64 test-bucket-ceiveran
         fi
 
@@ -116,16 +118,18 @@ jobs:
     - name: Deploy
       shell: bash
       run: |
+        mkdir -p build/release/extension/boilerplate
+        touch build/release/extension/boilerplate/boilerplate.duckdb_extension
         cd duckdb
         git fetch --tags
         export DUCKDB_VERSION=`git tag --points-at HEAD`
         export DUCKDB_VERSION=${DUCKDB_VERSION:=`git log -1 --format=%h`}
         cd ..
         if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
-          pip install awscli
+          python -m pip install awscli
           ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION linux_amd64_gcc4 test-bucket-ceiveran
         elif [[ "$GITHUB_REF" =~ ^(refs/heads/main)$ ]] ; then
-          pip install awscli
+          python -m pip install awscli
           ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION linux_amd64_gcc4 test-bucket-ceiveran
         fi
 
@@ -190,6 +194,8 @@ jobs:
       - name: Deploy
         shell: bash
         run: |
+          mkdir -p build/release/extension/boilerplate
+          touch build/release/extension/boilerplate/boilerplate.duckdb_extension
           cd duckdb
           git fetch --tags
           export DUCKDB_VERSION=`git tag --points-at HEAD`
