@@ -48,7 +48,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.s3_id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.s3_key }}
           AWS_DEFAULT_REGION: ${{ secrets.s3_region }}
-          BUCKET_NAME: ${{ secrets.bucket }}
+          BUCKET_NAME: ${{ secrets.s3_bucket }}
         run: |
           mkdir -p build/release/extension/boilerplate
           touch build/release/extension/boilerplate/boilerplate.duckdb_extension
