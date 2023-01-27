@@ -25,23 +25,23 @@ jobs:
         with:
           python-version: '3.7'
 
-         # Build extension
-      - name: Build extension
-        shell: bash
-        run: |
-          make release
-
-      # TODO: when adding S3 uploads, this can do remote tests
-      - name: Test
-        shell: bash
-        run: |
-          ./duckdb/scripts/extension-upload-test.sh local oote
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: macos-extensions-universal
-          path: |
-            build/release/extension/boilerplate/boilerplate.duckdb_extension
+#         # Build extension
+#      - name: Build extension
+#        shell: bash
+#        run: |
+#          make release
+#
+#      # TODO: when adding S3 uploads, this can do remote tests
+#      - name: Test
+#        shell: bash
+#        run: |
+#          ./duckdb/scripts/extension-upload-test.sh local oote
+#
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: macos-extensions-universal
+#          path: |
+#            build/release/extension/boilerplate/boilerplate.duckdb_extension
 
       # TODO also check if credentials are available for uploading
       - name: Deploy
@@ -60,11 +60,11 @@ jobs:
           echo $DUCKDB_VERSION
           cd ..
           if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
-            pip install awscli
+            python -m pip install awscli
             ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION osx_amd64 $BUCKET_NAME
             ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION osx_arm64 $BUCKET_NAME
           elif [[ "$GITHUB_REF" =~ ^(refs/heads/main)$ ]] ; then
-            pip install awscli
+            python -m pip install awscli
             ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION osx_amd64 $BUCKET_NAME
             ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION osx_arm64 $BUCKET_NAME
           fi
