@@ -25,11 +25,11 @@ jobs:
         with:
           python-version: '3.7'
 
-#         # Build extension
-#      - name: Build extension
-#        shell: bash
-#        run: |
-#          make release
+         # Build extension
+      - name: Build extension
+        shell: bash
+        run: |
+          make release
 #
 #      # TODO: when adding S3 uploads, this can do remote tests
 #      - name: Test
