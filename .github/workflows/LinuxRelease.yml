@@ -65,6 +65,7 @@ jobs:
         AWS_DEFAULT_REGION: ${{ secrets.S3_REGION }}
         BUCKET_NAME: ${{ secrets.S3_BUCKET }}
       run: |
+        git config --global --add safe.directory '*'
         mkdir -p build/release/extension/boilerplate
         touch build/release/extension/boilerplate/boilerplate.duckdb_extension
         cd duckdb
