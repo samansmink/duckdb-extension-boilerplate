@@ -9,11 +9,6 @@ jobs:
     name: Linux Extensions (x64)
     runs-on: ubuntu-latest
     container: ubuntu:16.04
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.S3_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_KEY }}
-      AWS_DEFAULT_REGION: ${{ secrets.S3_REGION }}
-
     steps:
     # Todo we now do a lot of this shit twice, because we cannot get submodule without a recent git
     - name: Install stuff
@@ -65,10 +60,10 @@ jobs:
     - name: Deploy
       shell: bash
       env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.s3_id }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.s3_key }}
-        AWS_DEFAULT_REGION: ${{ secrets.s3_region }}
-        BUCKET_NAME: ${{ secrets.s3_bucket }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.S3_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_KEY }}
+        AWS_DEFAULT_REGION: ${{ secrets.S3_REGION }}
+        BUCKET_NAME: ${{ secrets.S3_BUCKET }}
       run: |
         mkdir -p build/release/extension/boilerplate
         touch build/release/extension/boilerplate/boilerplate.duckdb_extension
@@ -78,10 +73,10 @@ jobs:
         export DUCKDB_VERSION=${DUCKDB_VERSION:=`git log -1 --format=%h`}
         cd ..
         if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
-          python -m pip install awscli
+          python3 -m pip install pip awscli
           ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION linux_amd64 test-bucket-ceiveran
         elif [[ "$GITHUB_REF" =~ ^(refs/heads/main)$ ]] ; then
-          python -m pip install awscli
+          python3 -m pip install pip awscli
           ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION linux_amd64 test-bucket-ceiveran
         fi
 
@@ -123,10 +118,10 @@ jobs:
     - name: Deploy
       shell: bash
       env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.s3_id }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.s3_key }}
-        AWS_DEFAULT_REGION: ${{ secrets.s3_region }}
-        BUCKET_NAME: ${{ secrets.s3_bucket }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.S3_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_KEY }}
+        AWS_DEFAULT_REGION: ${{ secrets.S3_REGION }}
+        BUCKET_NAME: ${{ secrets.S3_BUCKET }}
       run: |
         mkdir -p build/release/extension/boilerplate
         touch build/release/extension/boilerplate/boilerplate.duckdb_extension
@@ -136,10 +131,10 @@ jobs:
         export DUCKDB_VERSION=${DUCKDB_VERSION:=`git log -1 --format=%h`}
         cd ..
         if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
-          python -m pip install awscli
+          python3 -m pip install pip awscli
           ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION linux_amd64_gcc4 test-bucket-ceiveran
         elif [[ "$GITHUB_REF" =~ ^(refs/heads/main)$ ]] ; then
-          python -m pip install awscli
+          python3 -m pip install pip awscli
           ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION linux_amd64_gcc4 test-bucket-ceiveran
         fi
 
@@ -204,10 +199,10 @@ jobs:
       - name: Deploy
         shell: bash
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.s3_id }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.s3_key }}
-          AWS_DEFAULT_REGION: ${{ secrets.s3_region }}
-          BUCKET_NAME: ${{ secrets.s3_bucket }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.S3_REGION }}
+          BUCKET_NAME: ${{ secrets.S3_BUCKET }}
         run: |
           mkdir -p build/release/extension/boilerplate
           touch build/release/extension/boilerplate/boilerplate.duckdb_extension
@@ -217,9 +212,9 @@ jobs:
           export DUCKDB_VERSION=${DUCKDB_VERSION:=`git log -1 --format=%h`}
           cd ..
           if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
-            python -m pip install awscli
+            python3 -m pip install pip awscli
             ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION linux_arm64 test-bucket-ceiveran
           elif [[ "$GITHUB_REF" =~ ^(refs/heads/main)$ ]] ; then
-            python -m pip install awscli
+            python3 -m pip install pip awscli
             ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION linux_arm64 test-bucket-ceiveran
           fi

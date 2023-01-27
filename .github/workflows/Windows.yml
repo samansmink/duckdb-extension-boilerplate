@@ -45,10 +45,10 @@ jobs:
       - name: Deploy
         shell: bash
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.s3_id }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.s3_key }}
-          AWS_DEFAULT_REGION: ${{ secrets.s3_region }}
-          BUCKET_NAME: ${{ secrets.s3_bucket }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.S3_REGION }}
+          BUCKET_NAME: ${{ secrets.S3_BUCKET }}
         run: |
           mkdir -p build/release/extension/boilerplate
           touch build/release/extension/boilerplate/boilerplate.duckdb_extension
