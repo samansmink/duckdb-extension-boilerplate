@@ -86,7 +86,6 @@ jobs:
 
     - name: Deploy
       shell: bash
-      if: ${{ secrets.S3_DEPLOY_ID != ''}}
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.S3_DEPLOY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_DEPLOY_KEY }}
@@ -98,7 +97,9 @@ jobs:
         export DUCKDB_VERSION=`git tag --points-at HEAD`
         export DUCKDB_VERSION=${DUCKDB_VERSION:=`git log -1 --format=%h`}
         cd ..
-        if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
+        if [[ "$AWS_ACCESS_KEY_ID" == "" ]] ; then
+          echo 'No key set, skipping'
+        elif [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
           python3 -m pip install pip awscli
           ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION ${{matrix.arch}} $BUCKET_NAME
         elif [[ "$GITHUB_REF" =~ ^(refs/heads/main)$ ]] ; then
