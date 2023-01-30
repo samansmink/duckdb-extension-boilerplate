@@ -99,6 +99,7 @@ jobs:
         AWS_DEFAULT_REGION: ${{ secrets.S3_REGION }}
         BUCKET_NAME: ${{ secrets.S3_BUCKET }}
       run: |
+        git config --global --add safe.directory '*'
         cd duckdb
         git fetch --tags
         export DUCKDB_VERSION=`git tag --points-at HEAD`
