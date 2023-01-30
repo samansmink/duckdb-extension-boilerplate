@@ -6,21 +6,36 @@ concurrency:
 
 jobs:
   linux-extensions-64:
-    name: Linux Extensions (x64)
+    name: Linux Extensions
     runs-on: ubuntu-latest
-    container: ubuntu:16.04
+    container: ${{ strategy.matrix.container }}
+    strategy:
+      matrix:
+        # empty string builds current submodule version, add commits/tags to build other versions
+        duckdb_version: [ '' ]
+        include:
+          - arch: 'linux_amd64'
+            container: 'ubuntu:16.04'
+          - arch: 'linux_arm64'
+            container: 'ubuntu:18:04'
+          - arch: 'linux_amd64_gcc4'
+            container: 'quay.io/pypa/manylinux2014_x86_64'
+    env:
+      GEN: ninja
+
     steps:
-    # Todo we now do a lot of this shit twice, because we cannot get submodule without a recent git
-    - name: Install stuff
+    - name: Install required ubuntu packages
+      if: ${{ strategy.matrix.arch == 'linux_amd64' || strategy.matrix.arch == 'linux_arm64' }}
       shell: bash
       run: |
         apt-get update -y -qq
         apt-get install -y -qq software-properties-common
         add-apt-repository ppa:git-core/ppa
         apt-get update -y -qq
-        apt-get install -y -qq ninja-build make gcc-multilib g++-multilib libssl-dev wget openjdk-8-jdk zip maven unixodbc-dev libc6-dev-i386 lib32readline6-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip build-essential checkinstall libffi-dev curl libz-dev openssh-client
+        apt-get install -y -qq ninja-build make gcc-multilib g++-multilib libssl-dev wget zip libc6-dev-i386 libssl-dev libcurl4-gnutls-dev gettext unzip build-essential checkinstallcurl openssh-client
 
     - name: Install Git 2.18.5
+      if: ${{ strategy.matrix.arch == 'linux_amd64' || strategy.matrix.arch == 'linux_arm64' }}
       shell: bash
       run: |
         wget https://github.com/git/git/archive/refs/tags/v2.18.5.tar.gz
@@ -35,25 +50,36 @@ jobs:
         fetch-depth: 0
         submodules: 'true'
 
-    - uses: ./duckdb/.github/actions/ubuntu_16_setup
+    - if: ${{ strategy.matrix.arch == 'linux_amd64_gcc4' }}
+      uses: ./duckdb/.github/actions/centos_7_setup
+      with:
+        openssl: 0
 
-    # Build extension
+    - if: ${{ strategy.matrix.arch == 'linux_amd64' || strategy.matrix.arch == 'linux_arm64' }}
+      uses: ./duckdb/.github/actions/ubuntu_16_setup
+      with:
+        aarch64_cross_compile: ${{ strategy.matrix.arch == 'linux_arm64' }}
+
+    - name: Checkout DuckDB to version
+      if: ${{ strategy.matrix.duckdb_version != ''}}
+      shell: bash
+      run: |
+        cd duckdb
+        git checkout ${{ strategy.matrix.duckdb_version }}
+
+      # Build extension
     - name: Build extension
       shell: bash
       env:
         GEN: ninja
+        CC: ${{ strategy.matrix.arch == 'linux_arm64' && 'aarch64-linux-gnu-gcc' || '' }}
+        CXX: ${{ strategy.matrix.arch == 'linux_arm64' && 'aarch64-linux-gnu-g++' || '' }}
       run: |
         make release
 
-#      # TODO: when adding S3 uploads, this can do remote tests
-#    - name: Test
-#      shell: bash
-#      run: |
-#        ./duckdb/scripts/extension-upload-test.sh local oote
-
     - uses: actions/upload-artifact@v2
       with:
-        name: linux-extensions-64
+        name: ${{strategy.matrix.arch}}-extensions
         path: |
           build/release/extension/boilerplate/boilerplate.duckdb_extension
 
@@ -72,140 +98,140 @@ jobs:
         cd ..
         if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
           python3 -m pip install pip awscli
-          ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION linux_amd64 $BUCKET_NAME
+          ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION ${{strategy.matrix.arch}} $BUCKET_NAME
         elif [[ "$GITHUB_REF" =~ ^(refs/heads/main)$ ]] ; then
           python3 -m pip install pip awscli
-          ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION linux_amd64 $BUCKET_NAME
+          ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION ${{strategy.matrix.arch}} $BUCKET_NAME
         fi
-
-  manylinux-extensions:
-    name: Linux Extensions (x64, GCC4)
-    runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64
-    env:
-      GEN: ninja
-
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        submodules: 'true'
-
-    - uses: ./duckdb/.github/actions/centos_7_setup
-      with:
-        openssl: 0
-
-    # Build extension
-    - name: Build extension
-      shell: bash
-      run: |
-        make release
-
-#      # TODO: when adding S3 uploads, this can do remote tests
-#    - name: Test
+#
+#  manylinux-extensions:
+#    name: Linux Extensions (x64, GCC4)
+#    runs-on: ubuntu-latest
+#    container: quay.io/pypa/manylinux2014_x86_64
+#    env:
+#      GEN: ninja
+#
+#    steps:
+#    - uses: actions/checkout@v3
+#      with:
+#        fetch-depth: 0
+#        submodules: 'true'
+#
+#    - uses: ./duckdb/.github/actions/centos_7_setup
+#      with:
+#        openssl: 0
+#
+#    # Build extension
+#    - name: Build extension
 #      shell: bash
 #      run: |
-#        ./duckdb/scripts/extension-upload-test.sh local oote
-
-    - uses: actions/upload-artifact@v2
-      with:
-        name: manylinux-extensions-x86_64
-        path: |
-          build/release/extension/boilerplate/boilerplate.duckdb_extension
-
-    - name: Deploy
-      shell: bash
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.S3_DEPLOY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_DEPLOY_KEY }}
-        AWS_DEFAULT_REGION: ${{ secrets.S3_REGION }}
-        BUCKET_NAME: ${{ secrets.S3_BUCKET }}
-      run: |
-        git config --global --add safe.directory '*'
-        cd duckdb
-        git fetch --tags
-        export DUCKDB_VERSION=`git tag --points-at HEAD`
-        export DUCKDB_VERSION=${DUCKDB_VERSION:=`git log -1 --format=%h`}
-        cd ..
-        if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
-          python3 -m pip install pip awscli
-          ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION linux_amd64_gcc4 $BUCKET_NAME
-        elif [[ "$GITHUB_REF" =~ ^(refs/heads/main)$ ]] ; then
-          python3 -m pip install pip awscli
-          ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION linux_amd64_gcc4 $BUCKET_NAME
-        fi
-
-  linux-extensions-64-aarch64:
-    name: Linux Extensions (aarch64)
-    runs-on: ubuntu-latest
-    container: ubuntu:18.04 # cross compiler not available in 16
-    env:
-      GEN: ninja
-
-    steps:
-      - name: Install stuff
-        shell: bash
-        run: |
-          apt-get update -y -qq
-          apt-get install -y -qq software-properties-common
-          add-apt-repository ppa:git-core/ppa
-          apt-get update -y -qq
-          apt-get install -y -qq ninja-build make gcc-multilib g++-multilib libssl-dev wget openjdk-8-jdk zip maven unixodbc-dev libc6-dev-i386 lib32readline6-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip build-essential checkinstall libffi-dev curl libz-dev openssh-client
-
-      - name: Install Git 2.18.5
-        shell: bash
-        run: |
-          wget https://github.com/git/git/archive/refs/tags/v2.18.5.tar.gz
-          tar xvf v2.18.5.tar.gz
-          cd git-2.18.5
-          make
-          make prefix=/usr install
-          git --version
-
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          submodules: 'true'
-
-      - uses: ./duckdb/.github/actions/ubuntu_16_setup
-        with:
-          aarch64_cross_compile: 1
-
-      # Build extension
-      - name: Build extension
-        shell: bash
-        run: |
-          make release
-
-      # This doesn't work, the script cannot handle the fact that we build from a different cmake root
-      - name: Test
-        shell: bash
-        run: |
-          ./duckdb/scripts/extension-upload-test.sh local oote
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: linux-extensions-64-aarch64
-          path: |
-            build/release/extension/boilerplate/boilerplate.duckdb_extension
-
-      - name: Deploy
-        shell: bash
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.S3_DEPLOY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_DEPLOY_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.S3_REGION }}
-          BUCKET_NAME: ${{ secrets.S3_BUCKET }}
-        run: |
-          cd duckdb
-          git fetch --tags
-          export DUCKDB_VERSION=`git tag --points-at HEAD`
-          export DUCKDB_VERSION=${DUCKDB_VERSION:=`git log -1 --format=%h`}
-          cd ..
-          if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
-            python3 -m pip install pip awscli
-            ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION linux_arm64 $BUCKET_NAME
-          elif [[ "$GITHUB_REF" =~ ^(refs/heads/main)$ ]] ; then
-            python3 -m pip install pip awscli
-            ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION linux_arm64 $BUCKET_NAME
-          fi
+#        make release
+#
+##      # TODO: when adding S3 uploads, this can do remote tests
+##    - name: Test
+##      shell: bash
+##      run: |
+##        ./duckdb/scripts/extension-upload-test.sh local oote
+#
+#    - uses: actions/upload-artifact@v2
+#      with:
+#        name: manylinux-extensions-x86_64
+#        path: |
+#          build/release/extension/boilerplate/boilerplate.duckdb_extension
+#
+#    - name: Deploy
+#      shell: bash
+#      env:
+#        AWS_ACCESS_KEY_ID: ${{ secrets.S3_DEPLOY_ID }}
+#        AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_DEPLOY_KEY }}
+#        AWS_DEFAULT_REGION: ${{ secrets.S3_REGION }}
+#        BUCKET_NAME: ${{ secrets.S3_BUCKET }}
+#      run: |
+#        git config --global --add safe.directory '*'
+#        cd duckdb
+#        git fetch --tags
+#        export DUCKDB_VERSION=`git tag --points-at HEAD`
+#        export DUCKDB_VERSION=${DUCKDB_VERSION:=`git log -1 --format=%h`}
+#        cd ..
+#        if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
+#          python3 -m pip install pip awscli
+#          ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION linux_amd64_gcc4 $BUCKET_NAME
+#        elif [[ "$GITHUB_REF" =~ ^(refs/heads/main)$ ]] ; then
+#          python3 -m pip install pip awscli
+#          ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION linux_amd64_gcc4 $BUCKET_NAME
+#        fi
+#
+#  linux-extensions-64-aarch64:
+#    name: Linux Extensions (aarch64)
+#    runs-on: ubuntu-latest
+#    container: ubuntu:18.04 # cross compiler not available in 16
+#    env:
+#      GEN: ninja
+#
+#    steps:
+#      - name: Install stuff
+#        shell: bash
+#        run: |
+#          apt-get update -y -qq
+#          apt-get install -y -qq software-properties-common
+#          add-apt-repository ppa:git-core/ppa
+#          apt-get update -y -qq
+#          apt-get install -y -qq ninja-build make gcc-multilib g++-multilib libssl-dev wget openjdk-8-jdk zip maven unixodbc-dev libc6-dev-i386 lib32readline6-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip build-essential checkinstall libffi-dev curl libz-dev openssh-client
+#
+#      - name: Install Git 2.18.5
+#        shell: bash
+#        run: |
+#          wget https://github.com/git/git/archive/refs/tags/v2.18.5.tar.gz
+#          tar xvf v2.18.5.tar.gz
+#          cd git-2.18.5
+#          make
+#          make prefix=/usr install
+#          git --version
+#
+#      - uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#          submodules: 'true'
+#
+#      - uses: ./duckdb/.github/actions/ubuntu_16_setup
+#        with:
+#          aarch64_cross_compile: 1
+#
+#      # Build extension
+#      - name: Build extension
+#        shell: bash
+#        run: |
+#          make release
+#
+#      # This doesn't work, the script cannot handle the fact that we build from a different cmake root
+#      - name: Test
+#        shell: bash
+#        run: |
+#          ./duckdb/scripts/extension-upload-test.sh local oote
+#
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: linux-extensions-64-aarch64
+#          path: |
+#            build/release/extension/boilerplate/boilerplate.duckdb_extension
+#
+#      - name: Deploy
+#        shell: bash
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.S3_DEPLOY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_DEPLOY_KEY }}
+#          AWS_DEFAULT_REGION: ${{ secrets.S3_REGION }}
+#          BUCKET_NAME: ${{ secrets.S3_BUCKET }}
+#        run: |
+#          cd duckdb
+#          git fetch --tags
+#          export DUCKDB_VERSION=`git tag --points-at HEAD`
+#          export DUCKDB_VERSION=${DUCKDB_VERSION:=`git log -1 --format=%h`}
+#          cd ..
+#          if [[ "$GITHUB_REF" =~ ^(refs/tags/v.+)$ ]] ; then
+#            python3 -m pip install pip awscli
+#            ./scripts/extension-upload.sh boilerplate ${{ github.ref_name }} $DUCKDB_VERSION linux_arm64 $BUCKET_NAME
+#          elif [[ "$GITHUB_REF" =~ ^(refs/heads/main)$ ]] ; then
+#            python3 -m pip install pip awscli
+#            ./scripts/extension-upload.sh boilerplate `git log -1 --format=%h` $DUCKDB_VERSION linux_arm64 $BUCKET_NAME
+#          fi
