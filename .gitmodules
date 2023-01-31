@@ -1,4 +1,4 @@
 [submodule "duckdb"]
 	path = duckdb
 	url = https://github.com/samansmink/duckdb
-	branch = oote-ci-changes
+	branch = oote-build-changes-2

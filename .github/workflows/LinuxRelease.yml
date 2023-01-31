@@ -84,7 +84,11 @@ jobs:
         CXX: ${{ matrix.arch == 'linux_arm64' && 'aarch64-linux-gnu-g++' || '' }}
       run: |
         make release
-        make test
+
+    - name: Build extension
+      if: ${{ matrix.arch != 'linux_arm64'}}
+      shell: bash
+      make test
 
     - uses: actions/upload-artifact@v2
       with:
