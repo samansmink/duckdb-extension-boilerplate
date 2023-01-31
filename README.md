@@ -1,3 +1,5 @@
+Disclaimer: this repo is work-in-progress, follow https://github.com/duckdb and https://duckdb.org/news/ for the official launch.
+
 # DuckDB Extension  boilerplate
 This repository forms the base for the github template to build your own DuckDB extension. The main goal of this template is to allow users to easily create and build their own DuckDB extension.
 
