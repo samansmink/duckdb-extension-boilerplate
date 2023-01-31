@@ -88,7 +88,8 @@ jobs:
     - name: Build extension
       if: ${{ matrix.arch != 'linux_arm64'}}
       shell: bash
-      make test
+      run: |
+        make test
 
     - uses: actions/upload-artifact@v2
       with:
